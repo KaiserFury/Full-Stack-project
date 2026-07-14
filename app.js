@@ -3,11 +3,13 @@ const app = express();
 const mongoose = require("mongoose");
 const path = require("path");
 const Listing = require("./models/listing.js");
+const mdOverride = require("method-override");
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({extended: true}));
-
+// Enable PUT/DELETE requests from HTML forms using _method query parameter
+app.use(mdOverride("_method"));
 
 // Async connection to MongoDB
 async function main() {
@@ -37,14 +39,14 @@ app.get("/listings/new", (req, res) => {
    res.render("listings/new.ejs");
 });
 
-// Fetch and display a single listing by MongoDB ID
+// Fetch and display a single listing data by MongoDB ID
 app.get("/listings/:id", async(req, res) => {
   let {id} = req.params;
   const listing = await Listing.findById(id);
-  res.render("listings/show.ejs", {listing})
+  res.render("listings/show.ejs", {listing});
 });
 
-// Create a new listing from form data and redirect to listings page
+// Create a new listing from form data and redirect to listings home page
 app.post("/listings", async(req, res) => {
   let newListingData = req.body;
   const newListing = new Listing(newListingData.listing);
@@ -53,10 +55,19 @@ app.post("/listings", async(req, res) => {
   res.redirect("/listings");
 }) ;
 
+// Render form to edit an existing listing
+app.get("/listings/:id/edit", async (req, res) => {
+  let {id} = req.params;
+  const listing = await Listing.findById(id);
+  res.render("listings/edit.ejs", {listing});
+})
 
-
-
-
+// Update listing with form data and redirect to listing details
+app.put("/listings/:id", async(req, res) => {
+  let {id} = req.params;
+  await Listing.findByIdAndUpdate(id, {...req.body.listing})
+  res.redirect(`/listings/${id}`); 
+});
 
 
 app.listen(8080, () => {
