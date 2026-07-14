@@ -4,6 +4,10 @@ const Listing = require("../models/listing.js");
 
 const MONGO_URL = "mongodb://127.0.0.1:27017/WanderLust";
 
+async function main() {
+  await mongoose.connect(MONGO_URL);
+}
+
 main()
   .then(() => {
     console.log("connected to DB");
@@ -12,10 +16,8 @@ main()
     console.log(err);
   });
 
-async function main() {
-  await mongoose.connect(MONGO_URL);
-}
-
+// Clear existing data and seed fresh sample listings
+// Pattern: deleteMany({}) followed by insertMany() ensures consistent initial state
 const initDB = async () => {
   await Listing.deleteMany({});
   await Listing.insertMany(initData.data);

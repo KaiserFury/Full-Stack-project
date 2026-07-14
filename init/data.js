@@ -1,3 +1,4 @@
+// Sample data to seed the database
 const sampleListings = [
   {
     title: "Cozy Beachfront Cottage",

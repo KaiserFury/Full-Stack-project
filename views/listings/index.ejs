@@ -6,12 +6,20 @@
     <title>WanderLust</title>
 </head>
 <body>
-    <ul>
     <h1>Welcome</h1>
-    <%for(list of allListing){%>
-        <li><%= list.title %></li>
+    <!-- Navigate to new listing form -->
+    <form action="/listings/new" method="get">
+        <button>Create New Listing</button>
+    </form>
+    <ul> 
+        <!-- Dynamic list: Loop through all listings and create links using their MongoDB ObjectID -->
+        <%for(list of allListing){%>
+            <li>
+                <a href="/listings/<%= list._id %>"> 
+                    <%= list.title %> 
+                </a>
+            </li>
         <%}%>
     </ul>
-
 </body>
 </html>
