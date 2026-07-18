@@ -4,12 +4,19 @@ const mongoose = require("mongoose");
 const path = require("path");
 const Listing = require("./models/listing.js");
 const mdOverride = require("method-override");
+// EJS-Mate enables layout templates for DRY HTML structure
+const ejsMate = require("ejs-mate");
+
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({extended: true}));
 // Enable PUT/DELETE requests from HTML forms using _method query parameter
 app.use(mdOverride("_method"));
+// Use EJS-Mate as the templating engine for layout support
+app.engine('ejs', ejsMate);
+// Serve static files (CSS, images, etc.) from public directory
+app.use(express.static(path.join(__dirname, "/public")));
 
 // Async connection to MongoDB
 async function main() {
@@ -22,11 +29,12 @@ main()
   })
   .catch((err) => {
     console.log(err);
-  });
+  }); 
 
 app.get("/", (req, res) => {
   res.send("Working");
 });
+
 
 // Fetch all listings and render to template
 app.get("/listings", async(req, res) => {
