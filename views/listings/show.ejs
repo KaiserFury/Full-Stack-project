@@ -1,29 +1,40 @@
 <% layout('layouts/boilerplate') -%>
 
-<body>
-    <h3>Listing Details: </h3>
+    <body>
+        <h3 class="mb-4">Listing Details: </h3>
 
-    <ul>
-        <li>
-            <%= listing.title %>
-        </li>
-        <li>
-            <%= listing.description %>
-        </li>
-        <li>
-            &#8377;<%= listing.price.toLocaleString("en-IN") %>
-        </li>
-        <li>
-            <%= listing.location %>
-        </li>
-        <li>
-            <%= listing.country %>
-        </li>
-    </ul>
-    </br>
-    
-    <a href="<%=listing._id%>/edit">Edit details</a>
-    <a href="/listings">Back to Home</a>
+        <div class="row align-items-start">
+            <div class="col-md-5">
+                <div class="img-box">
+                <img src="<%= listing.image %>" alt="listing_image"
+                    style=" width: 100%; height: 25rem; object-fit: contain;" class="card-img-top">
+                </div>
+            </div>
+            <div class="col-md-7">
+                <ul class="list-unstyled">
+                    <li style="font-size: 2rem; font-weight: bold;">
+                        <strong>
+                            <%= listing.title %>
+                        </strong>
+                    </li>
+                    <li>
+                        <b>Description: </b><%= listing.description %>
+                    </li>
+                    <li>
+                        <b>Price: </b>&#8377;<%= listing.price.toLocaleString("en-IN") %>
+                    </li>
+                    <li>
+                        <b>Location: </b><%= listing.location %>
+                    </li>
+                    <li>
+                        <b>Country: </b><%= listing.country %>
+                    </li>
+                </ul>
+                </br>
 
-</body>
+                <a href="<%=listing._id%>/edit" class="btn btn-danger">Edit details</a>
+                <a href="<%=listing._id%>/delete" class="btn btn-danger m-2">Delete listing</a>
+            </div>
+        </div>
 
+    </body>

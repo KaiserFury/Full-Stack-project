@@ -1,39 +1,115 @@
+body {
+  font-family: "Plus Jakarta Sans", sans-serif !important;
+  font-optical-sizing: auto !important;
+  font-style: normal  !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.container {
+  flex: 1;
+}
+
 .navbar {
-    height: 5rem;
-    background-color: white;
+  height: 5rem;
+  background-color: white;
 }
 
 /* Custom snap-4 animation: 4 discrete rotations per full spin */
 @keyframes fa-spin-snap-4 {
-    0% { transform: rotate(0deg); }
-    25% { transform: rotate(90deg); }
-    50% { transform: rotate(180deg); }
-    75% { transform: rotate(270deg); }
-    100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(90deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+  75% {
+    transform: rotate(270deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .fa-spin-snap-4 {
-    animation: fa-spin-snap-4 2s steps(4, end) infinite;
+  animation: fa-spin-snap-4 2s steps(4, end) infinite;
 }
 
 .nav-link {
-    color: #222222 !important
+  color: #222222 !important;
 }
 
 /* FOOTER */
 
-.f-info-link a{
-    text-decoration: none;
-    color: rgb(20, 20, 43);
+.f-info-links a {
+  text-decoration: none;
+  color: rgb(20, 20, 43);
 }
 
-.f-info-link a:hover{
-    text-decoration: underline;
+.f-info-links a:hover {
+  text-decoration: underline;
 }
 
+.f-info-links,
+.f-info-socials,
+.f-info-brand {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.f-info-socials i {
+  margin-right: 1.5rem;
+  font-size: 1.3rem;
+}
 
 .f-info {
-    height: 8rem;
-    background-color: #ebebee;
-    display: flex;
+  height: 8rem;
+  background-color: #ebebee;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: space-evenly;
+  text-align: center;
 }
+
+/* Listing card styling for the homepage grid */
+.card {
+  border: none !important;
+  margin-bottom: 2rem;
+}
+
+.card-img-top {
+  border-radius: 1rem !important;
+  width: 100% !important;
+  object-fit: cover !important;
+}
+
+.card-body {
+    padding: 0 !important;
+}
+
+.card-text p {
+    font-weight: 400 !important;
+}
+
+
+.listing-link-a {
+    text-decoration: none;;
+}
+
+/* Fade the overlay in on hover to create a subtle highlight effect */
+.card-img-overlay {
+    opacity: 0;
+}
+
+.card-img-overlay:hover {
+    opacity: 0.3;
+    background-color: white;
+}
+
+

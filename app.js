@@ -77,9 +77,16 @@ app.put("/listings/:id", async(req, res) => {
   res.redirect(`/listings/${id}`); 
 });
 
+// Delete a listing by ID and return to the listings overview
+app.get("/listings/:id/delete", async (req, res) => {
+  let {id} = req.params;
+  await Listing.findByIdAndDelete(id);
+  res.redirect("/listings");
+});
+
 
 app.listen(8080, () => {
-  console.log("Server is running");
+  console.log("Server is 8080 running");
 });
 
 
