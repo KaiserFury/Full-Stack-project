@@ -74,7 +74,7 @@ node app.js
 5. Open your browser and visit:
 
 ```bash
-http://localhost:8080
+http://localhost:8080/listings
 ```
 
 ## Usage
