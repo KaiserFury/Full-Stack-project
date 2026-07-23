@@ -11,8 +11,10 @@ const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 // Custom error class used for validated request failures and 404 responses
 const ExpressError = require("./utils/ExpressError.js");
-// Joi schema for listing validation
-const {listingschema} = require("./schema.js");
+// Joi schema for listing and review validation
+const {listingSchema, reviewSchema} = require("./schema.js");
+
+const Review = require("./models/review.js");
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -41,11 +43,22 @@ app.get("/", (req, res) => {
   res.send("Working");
 });
 
-// Validate incoming listing data before creating or updating a listing
+// Validate incoming listing data before creating or updating a listing// Validate listing payload against Joi schema before create/update routesconst validateListing = (req, res, next) => {
 const validateListing = (req, res, next) => {
-  let result = listingschema.validate(req.body);
+  let result = listingSchema.validate(req.body);
   if (result.error) {
     throw new ExpressError(400, result.error.details[0].message);
+  }
+  else {
+    next();
+  }
+};
+
+const validateReview = (req, res, next) => {
+  let result = reviewSchema.validate(req.body);
+  if (result.error) {
+    throw new ExpressError(400, result.error.details[0].message);
+    console.log(result);
   }
   else {
     next();
@@ -67,7 +80,7 @@ app.get("/listings/new", (req, res) => {
 // Fetch and display a single listing data by MongoDB ID
 app.get("/listings/:id", wrapAsync(async(req, res) => {
   let {id} = req.params;
-  const listing = await Listing.findById(id);
+  const listing = await Listing.findById(id).populate("reviews");
   res.render("listings/show.ejs", {listing});
 }));
 
@@ -100,12 +113,33 @@ app.get("/listings/:id/delete",wrapAsync( async (req, res) => {
   res.redirect("/listings");
 }));
 
+app.post("/listings/:id/reviews", validateReview,  async (req, res) => {
+  let {id} = req.params;
+  let property = await Listing.findById(id);
+  let newReview = new Review(req.body.reviews);
+
+  property.reviews.push(newReview);
+  await newReview.save();
+  await property.save();
+  res.redirect(`/listings/${id}`);
+});
+
+
+app.delete("/listings/:id/reviews/:reviewId", wrapAsync(async (req, res) => {
+  let {id, reviewId} = req.params;
+  await Listing.findByIdAndUpdate(id, {$pull: {reviews: reviewId}});
+  await Review.findByIdAndDelete(reviewId);
+  res.redirect(`/listings/${id}`);
+
+}));
+
 // Catch-all route for unmatched paths, forwarding to the global error handler
+// Catch all unmatched routes and forward to global error handler
 app.all('/{*catchall}', (req, res, next) => {
   next(new ExpressError(404, "Page Not Found"));
 });
 
-// Global error handler renders a friendly error page
+// Centralized error handler renders a friendly error page for all thrown errors
 app.use((err,req, res, next) => {
   res.render("includes/error.ejs", {message: err.message});
   // res.status(err.statusCode || 500).send(err.message || "something went wrong");

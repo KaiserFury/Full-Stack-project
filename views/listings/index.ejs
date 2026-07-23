@@ -4,9 +4,9 @@
         <h1>Welcome</h1>
         <!-- Render each listing as a responsive card in a compact grid -->
         <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1">
-            <%for(list of allListing){%>
+            <%for(let list of allListing){%>
                 <a href="/listings/<%= list.id%>" class="listing-link-a">
-                    <div class="card col">
+                    <div class="card col listing-card ">
                         <img src="<%= list.image%>" class="card-img-top" alt="image_listing" style="height: 20rem;">
                         <div class="card-img-overlay"></div>
                         <div class="card-body">

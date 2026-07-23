@@ -1,33 +1,37 @@
 # Wanderlust
 
-Wanderlust is a simple full-stack listing application built with Node.js, Express, MongoDB, and EJS. It allows users to view, create, edit, and delete travel listings through a clean web interface.
+Wanderlust is a full-stack listing application built with Node.js, Express, MongoDB, and EJS. It allows users to manage travel listings with create, read, update, delete, and review functionality through a Bootstrap-based interface.
 
 ## Project Overview
 
-This project is a beginner-friendly full-stack web app that demonstrates core CRUD operations and template-based rendering. It is designed to help learn how to connect a Node.js server with a MongoDB database and render dynamic pages using EJS.
+This app demonstrates a modern Express.js workflow with:
+- server-side rendering using EJS and EJS-Mate layouts
+- MongoDB models with Mongoose
+- request validation using Joi
+- method override for PUT/DELETE support in HTML forms
+- centralized async error handling and custom 404 pages
+- frontend form validation using Bootstrap
 
 ## Features
 
-- View all listings on the homepage
+- View all listings on `/listings`
 - Open individual listing details
-- Create new listings using a form
+- Create a new listing with validation
 - Edit existing listings
 - Delete listings
-- Responsive UI with Bootstrap styling
-- Reusable layout using EJS-Mate
-- Static asset serving for CSS and frontend files
+- Add reviews to listings
+- Delete reviews from the listing details page
+- Custom error page for invalid routes and validation failures
+- Responsive UI with Bootstrap and Font Awesome
 
-## Tech Stack
+## Current Dependencies
 
-- Node.js
-- Express.js
-- MongoDB
-- Mongoose
-- EJS
-- EJS-Mate
-- Bootstrap
-- Font Awesome
-- Method Override
+- `express`
+- `mongoose`
+- `ejs`
+- `ejs-mate`
+- `method-override`
+- `joi`
 
 ## Project Structure
 
@@ -35,16 +39,23 @@ This project is a beginner-friendly full-stack web app that demonstrates core CR
 major project/
 ├── app.js
 ├── package.json
-├── init/
-│   ├── data.js
-│   └── index.js
+├── schema.js
+├── README.md
 ├── models/
-│   └── listing.js
+│   ├── listing.js
+│   └── review.js
 ├── public/
-│   └── css/
-│       └── style.css
+│   ├── css/
+│   │   └── style.css
+│   └── java script/
+│       └── script.js
+├── utils/
+│   ├── ExpressError.js
+│   └── wrapAsync.js
 └── views/
     ├── includes/
+    │   ├── error.ejs
+    │   ├── footer.ejs
     │   └── navbar.ejs
     ├── layouts/
     │   └── boilerplate.ejs
@@ -57,21 +68,21 @@ major project/
 
 ## Installation
 
-1. Clone the repository
+1. Clone the repository.
 2. Install dependencies:
 
 ```bash
 npm install
 ```
 
-3. Make sure MongoDB is running locally
-4. Start the server:
+3. Make sure MongoDB is running locally.
+4. Start the app:
 
 ```bash
 node app.js
 ```
 
-5. Open your browser and visit:
+5. Open the app in your browser at:
 
 ```bash
 http://localhost:8080/listings
@@ -79,26 +90,25 @@ http://localhost:8080/listings
 
 ## Usage
 
-- Visit the homepage to see all listings
-- Use the "Add new Listings" link to create a new listing
-- Click on any listing to view its details
-- Use the edit option to update a listing
-- Use the delete option to remove a listing
-
-## Database
-
-The app connects to a local MongoDB database named `WanderLust`.
+- Visit `/listings` to browse all listings.
+- Click `Add new Listings` to create a new listing.
+- Click a listing card to view details and add reviews.
+- Use the `Edit details` button to update a listing.
+- Use the `Delete listing` button to remove a listing.
+- Use the review section to submit ratings/comments and delete reviews.
 
 ## Notes
 
-This project is currently in an early learning stage and focuses on understanding the fundamentals of backend development, database integration, and rendering dynamic pages.
+- The root route `/` currently returns a simple "Working" response. The primary user experience begins at `/listings`.
+- Static assets are served from the `public` directory.
+- Form validation is implemented both on the frontend and server-side.
 
 ## Future Improvements
 
-Possible future enhancements include:
+Possible next steps include:
 
-- User authentication
-- Image upload support
-- Search and filtering
-- Better validation and error handling
-- Improved UI and animations
+- user authentication and authorization
+- file upload support for listing images
+- filter/search listings by location or price
+- better review author tracking
+- more robust error messages and UI polishing
