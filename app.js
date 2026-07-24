@@ -5,14 +5,17 @@ const path = require("path");
 const mdOverride = require("method-override");
 // EJS-Mate enables layout templates for DRY HTML structure
 const ejsMate = require("ejs-mate");
-
 // Custom error class used for validated request failures and 404 responses
 const ExpressError = require("./utils/ExpressError.js");
-
 const Review = require("./models/review.js");
-
+// Listing routes for CRUD operations
 const listings = require("./routers/routesListing.js");
+// Review routes for creating and deleting review entries
 const reviews = require("./routers/routesReviews.js");
+const session = require("express-session");
+const flash = require("connect-flash");
+
+
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -37,12 +40,43 @@ main()
     console.log(err);
   });
 
+// Session configuration for flash messages and future auth-related state
+const sessionOption = {
+  secret: "Mysecret",
+  resave: false,
+  saveUninitialized : true,
+  cookie: {
+    expires: Date.now()+7*24*60*60*1000,
+    maxAge: 7*24*60*60*1000,
+    httpOnly: true,
+  },
+}
 app.get("/", (req, res) => {
   res.send("Working");
 });
 
-app.use("/listings", listings);
-app.use("/listings/:id/reviews", reviews);
+
+app.use(session(sessionOption));
+app.use(flash());
+
+// Make flash messages available to all EJS templates
+app.use((req, res, next) => {
+  res.locals.success = req.flash("success");
+  res.locals.error = req.flash("error");
+  next();
+});
+
+
+
+
+app.use("/listings", listings); // listing CRUD routes
+app.use("/listings/:id/reviews", reviews); // review CRUD routes
+
+
+
+
+
+
 
 // Catch-all route for unmatched paths, forwarding to the global error handler
 // Catch all unmatched routes and forward to global error handler
