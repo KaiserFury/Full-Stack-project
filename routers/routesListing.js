@@ -10,6 +10,8 @@ const ExpressError = require("../utils/ExpressError.js");
 // Joi schema for listing and review validation
 const {listingSchema } = require("../schema.js");
 
+// Pssport is a NPM package/library that help in building user authentication
+const passport = require("passport");
 
 
 

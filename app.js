@@ -7,13 +7,22 @@ const mdOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 // Custom error class used for validated request failures and 404 responses
 const ExpressError = require("./utils/ExpressError.js");
-const Review = require("./models/review.js");
-// Listing routes for CRUD operations
-const listings = require("./routers/routesListing.js");
-// Review routes for creating and deleting review entries
-const reviews = require("./routers/routesReviews.js");
 const session = require("express-session");
 const flash = require("connect-flash");
+
+// Pssport is a NPM package that help in building user authentication
+const passport = require("passport");
+const LocalStratergy = require("passport-local");
+const User = require("./models/user.js");
+
+
+// Listing routes for CRUD operations
+const listingRouter = require("./routers/routesListing.js");
+// Review routes for creating and deleting review entries
+const reviewsRouter = require("./routers/routesReviews.js");
+// User routes
+const userRouter = require("./routers/routesUser.js");
+
 
 
 
@@ -67,12 +76,23 @@ app.use((req, res, next) => {
 });
 
 
+app.get("/demouser", (req, res) => {
+  
+})
 
 
-app.use("/listings", listings); // listing CRUD routes
-app.use("/listings/:id/reviews", reviews); // review CRUD routes
 
 
+app.use("/listings", listingRouter); // listing CRUD routes
+app.use("/listings/:id/reviews", reviewsRouter); // review CRUD routes
+app.use("/", userRouter); //  User routes
+
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use( new LocalStratergy(User.authenticate()));
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 
 
