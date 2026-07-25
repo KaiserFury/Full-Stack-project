@@ -68,17 +68,21 @@ app.get("/", (req, res) => {
 app.use(session(sessionOption));
 app.use(flash());
 
+
+app.use(passport.initialize());
+app.use(passport.session());
 // Make flash messages available to all EJS templates
+// Create local variable that are accessable any where in EJS files
+
 app.use((req, res, next) => {
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
+  res.locals.currentLoginStatus = req.user;
   next();
 });
 
 
-app.get("/demouser", (req, res) => {
-  
-})
+
 
 
 
@@ -87,8 +91,7 @@ app.use("/listings", listingRouter); // listing CRUD routes
 app.use("/listings/:id/reviews", reviewsRouter); // review CRUD routes
 app.use("/", userRouter); //  User routes
 
-app.use(passport.initialize());
-app.use(passport.session());
+
 passport.use( new LocalStratergy(User.authenticate()));
 
 passport.serializeUser(User.serializeUser());

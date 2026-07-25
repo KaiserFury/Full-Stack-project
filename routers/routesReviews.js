@@ -12,6 +12,8 @@ const wrapAsync = require("../utils/wrapAsync.js");
 // Custom error class used for validated request failures and 404 responses
 const ExpressError = require("../utils/ExpressError.js");
 
+// import login middleware
+const { isLoggedIn } = require("../middleware.js");
 
 
 
@@ -32,7 +34,7 @@ const validateReview = (req, res, next) => {
 
 
 // Create a new review and attach it to the selected listing
-router.post("/", validateReview, wrapAsync(async (req, res) => {
+router.post("/", validateReview, isLoggedIn, wrapAsync(async (req, res) => {
   let { id } = req.params;
 
   let property = await Listing.findById(id);
@@ -50,7 +52,7 @@ router.post("/", validateReview, wrapAsync(async (req, res) => {
 }));
 
 // Delete a review and remove its reference from the parent listing
-router.delete("/:reviewId", wrapAsync(async (req, res) => {
+router.delete("/:reviewId", isLoggedIn,  wrapAsync(async (req, res) => {
   let {id, reviewId} = req.params;
   await Listing.findByIdAndUpdate(id, {$pull: {reviews: reviewId}});
   await Review.findByIdAndDelete(reviewId);

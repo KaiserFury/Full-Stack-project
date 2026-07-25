@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/user.js");
+// Pssport is a NPM package/library that help in building user authentication
 const passport = require("passport");
 
 // Utility wrapper to catch errors in async route handlers
@@ -46,5 +47,17 @@ router.post(
     res.redirect("/listings");
   },
 );
+
+// Logged out route
+
+router.get("/logout", (req, res, next) => {
+    req.logout((err) => {
+        if(err){
+           return next(err);
+        }
+        req.flash("success", "you are logged out!");
+        res.redirect("/listings")
+    })
+})
 
 module.exports = router;
