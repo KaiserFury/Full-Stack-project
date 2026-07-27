@@ -6,6 +6,7 @@ const passport = require("passport");
 
 // Utility wrapper to catch errors in async route handlers
 const wrapAsync = require("../utils/wrapAsync.js");
+const { saveRedirectUrl } = require("../middleware.js");
 
 // this route render the signup form
 router.get("/signup", (req, res) => {
@@ -21,6 +22,13 @@ router.post(
       const newUser = new User({ email, username });
       const registereduser = await User.register(newUser, password);
       console.log(registereduser);
+      req.login(registereduser, (err) => {
+        if (err) {
+          return next(err);
+        }
+        req.flash("success", "Welcome to WanderLust");
+        res.redirect("/listings");
+      }); 
       req.flash("success", "Welcome to Wanderlust!");
       res.redirect("/listings");
     } catch (e) {
@@ -38,13 +46,16 @@ router.get("/login", (req, res) => {
 // this route allows to login and check for  correct password
 router.post(
   "/login",
+  saveRedirectUrl,
   passport.authenticate("local", {
     failureRedirect: "/login",
     failureFlash: true,
   }),
   async (req, res) => {
     req.flash("success", "Welcome Back");
-    res.redirect("/listings");
+
+    let redirectUrl = res.locals.redirectUrl || "/listings";
+    res.redirect(redirectUrl);
   },
 );
 

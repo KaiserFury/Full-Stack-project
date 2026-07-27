@@ -35,6 +35,10 @@ const listingSchema = new Schema({
       ref: "Review",
     },
   ],
+  owner: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
 });
 
 // Cascade delete: remove all review documents linked to a deleted listing

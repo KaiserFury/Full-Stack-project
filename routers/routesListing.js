@@ -49,7 +49,8 @@ router.get(
   "/:id",
   wrapAsync(async (req, res) => {
     let { id } = req.params;
-    const listing = await Listing.findById(id).populate("reviews");
+    const listing = await Listing.findById(id).populate("reviews").populate("owner");
+    console.log(listing)
     if (!listing) {
       req.flash(
         "error",
@@ -70,7 +71,10 @@ router.post(
   validateListing,
   wrapAsync(async (req, res, next) => {
     let newListingData = req.body;
+    console.log(req.user._id)
+    newListingData.listing.owner = req.user._id;
     const newListing = new Listing(newListingData.listing);
+
     await newListing.save();
     req.flash("success", "New Property is added ");
     res.redirect("/listings");
