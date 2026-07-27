@@ -4,16 +4,17 @@ const Listing = require("../models/listing.js");
 
 // Utility wrapper to catch errors in async route handlers
 const wrapAsync = require("../utils/wrapAsync.js");
-// Custom error class used for validated request failures and 404 responses
+// Custom error used when listing validation fails
 const ExpressError = require("../utils/ExpressError.js");
-// Joi schema for listing and review validation
+// Joi schema for listing payload validation
 const { listingSchema } = require("../schema.js");
 
-// import login middleware
+// Authentication and ownership guards for listing mutations
 const { isLoggedIn, isOwner } = require("../middleware.js");
 
-// Validate incoming listing data before creating or updating a listing
-// // Validate listing payload against Joi schema before create/update routesconst
+const listingController = require("../controllers/listings.js");
+
+// Reject invalid payloads before controller and database work
 const validateListing = (req, res, next) => {
   let result = listingSchema.validate(req.body);
   if (result.error) {
@@ -24,109 +25,45 @@ const validateListing = (req, res, next) => {
 };
 
 // Fetch all listings and render to template
-// Index or show Route
-router.get(
-  "/",
-  wrapAsync(async (req, res) => {
-    const allListing = await Listing.find();
-    res.render("listings/index.ejs", { allListing });
-  }),
-);
+router.get("/", wrapAsync(listingController.index));
 
 // Render form to create a new listing
-// New Route
-router.get("/new", isLoggedIn, (req, res) => {
-  res.render("listings/new.ejs");
-});
+router.get("/new", isLoggedIn, listingController.newListingForm);
 
-// Fetch and display a single listing data by MongoDB ID
-// show route
-router.get(
-  "/:id",
-  wrapAsync(async (req, res) => {
-    let { id } = req.params;
-    // Populate is mongose function
-    const listing = await Listing.findById(id).populate({
-      path: "reviews",
-      populate: { path: "author" },
-    }).populate("owner");
-    if (!listing) {
-      req.flash(
-        "error",
-        "The Property you are try to reach might be deleted or does not exit! ",
-      );
-      return res.redirect("/listings");
-    }
-
-    res.render("listings/show.ejs", { listing });
-  }),
-);
-
-// Create a new listing from form data and redirect to listings home page
-// Create Route
+// Create a listing and redirect to the listing catalog
 router.post(
   "/",
   isLoggedIn,
   validateListing,
-  wrapAsync(async (req, res, next) => {
-    let newListingData = req.body;
-    console.log(req.user._id);
-    newListingData.listing.owner = req.user._id; // Add the owner who created this listing
-    const newListing = new Listing(newListingData.listing);
-
-    await newListing.save();
-    req.flash("success", "New Property is added ");
-    res.redirect("/listings");
-  }),
+  wrapAsync(listingController.saveNewListing),
 );
 
+// Fetch and display a single listing data by MongoDB ID
+router.get("/:id", wrapAsync(listingController.show));
+
 // Render form to edit an existing listing
-// Edit Route
 router.get(
   "/:id/edit",
   isLoggedIn,
   isOwner,
-  wrapAsync(async (req, res) => {
-    let { id } = req.params;
-    const listing = await Listing.findById(id);
-    // If no listing is found for the given ID, show an error message
-    // and redirect the user back to the listings page.
-    if (!listing) {
-      req.flash("error", "bkl manja! ");
-      return res.redirect("/listings");
-    }
-
-    res.render("listings/edit.ejs", { listing });
-  }),
+  wrapAsync(listingController.editListing),
 );
 
 // Update listing with form data and redirect to listing details
-// Update Route
 router.put(
   "/:id",
   isLoggedIn,
   isOwner,
   validateListing,
-  wrapAsync(async (req, res) => {
-    let { id } = req.params;
-    await Listing.findByIdAndUpdate(id, { ...req.body.listing });
-    if (req) req.flash("success", "Edit Successful ");
-    res.redirect(`/listings/${id}`);
-  }),
+  wrapAsync(listingController.updateListing),
 );
 
 // Delete a listing by ID and return to the listings overview
-// Delete Route
 router.get(
   "/:id/delete",
   isLoggedIn,
   isOwner,
-  wrapAsync(async (req, res) => {
-    let { id } = req.params;
-    await Listing.findByIdAndDelete(id);
-    req.flash("success", " Listing Deleted Successful ");
-    res.redirect("/listings");
-  }),
+  wrapAsync(listingController.deleteListing),
 );
 
 module.exports = router;

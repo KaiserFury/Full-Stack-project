@@ -10,7 +10,6 @@ const ExpressError = require("./utils/ExpressError.js");
 const session = require("express-session");
 const flash = require("connect-flash");
 
-// Pssport is a NPM package that help in building user authentication
 const passport = require("passport");
 const LocalStratergy = require("passport-local");
 const User = require("./models/user.js");
@@ -49,7 +48,7 @@ main()
     console.log(err);
   });
 
-// Session configuration for flash messages and future auth-related state
+// Sessions persist Passport authentication and flash messages for seven days.
 const sessionOption = {
   secret: "Mysecret",
   resave: false,
@@ -71,13 +70,12 @@ app.use(flash());
 
 app.use(passport.initialize());
 app.use(passport.session());
-// Make flash messages available to all EJS templates
-// Create local variable that are accessable any where in EJS files
+// Expose flash messages and the authenticated user to every EJS view.
 
 app.use((req, res, next) => {
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
-  res.locals.currentLoginStatus = req.user; // .user is a passport function 
+  res.locals.currentLoginStatus = req.user;
   next();
 });
 
@@ -102,7 +100,6 @@ passport.deserializeUser(User.deserializeUser());
 
 
 // Catch-all route for unmatched paths, forwarding to the global error handler
-// Catch all unmatched routes and forward to global error handler
 app.all("/{*catchall}", (req, res, next) => {
   next(new ExpressError(404, "Page Not Found"));
 });
@@ -110,7 +107,6 @@ app.all("/{*catchall}", (req, res, next) => {
 // Centralized error handler renders a friendly error page for all thrown errors
 app.use((err, req, res, next) => {
   res.render("includes/error.ejs", { message: err.message });
-  // res.status(err.statusCode || 500).send(err.message || "something went wrong");
 });
 
 app.listen(8080, () => {

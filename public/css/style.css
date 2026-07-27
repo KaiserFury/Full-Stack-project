@@ -77,7 +77,7 @@ body {
   text-align: center;
 }
 
-/* Listing card styling for the homepage grid */
+/* Listing card styling for the catalog grid */
 .listing-card {
   border: none !important;
   margin-bottom: 2rem;
@@ -115,5 +115,4 @@ body {
 
 .show-title {
   font-weight: 600;
-  /* text-decoration:  underline; */
 }

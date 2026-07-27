@@ -1,5 +1,5 @@
-const { required } = require("joi"); // import joi for validation
-const mongoose = require("mongoose"); // Connect Mongoose with MongoDB
+const { required } = require("joi");
+const mongoose = require("mongoose");
 
 // Extract the actual plugin function from the default export
 const { default: passportLocalMongoose } = require("passport-local-mongoose");

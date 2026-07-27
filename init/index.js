@@ -16,8 +16,7 @@ main()
     console.log(err);
   });
 
-// Clear existing data and seed fresh sample listings
-// Pattern: deleteMany({}) followed by insertMany() ensures consistent initial state
+// Destructively replace all listings and assign them to the development seed user.
 const initDB = async () => {
   await Listing.deleteMany({});
   initData.data = initData.data.map((obj) => ({...obj, owner:  '6a64bda5069cbf431219a2e6'}))

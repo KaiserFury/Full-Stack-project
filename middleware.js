@@ -29,7 +29,7 @@ module.exports.isOwner = async (req, res, next) => {
     next();
 };
 
-// This middleware ensures only the review owner can delete it
+// Allow review deletion only for the authenticated author.
 module.exports.isReviewAuthor = async (req, res, next) => {
     let { id, reviewId } = req.params;
     let review = await Review.findById(reviewId);

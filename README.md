@@ -49,156 +49,132 @@ Discover unique stays, publish property listings, and share community reviews th
 
 ## About the Project
 
-Wanderlust is a modular, full-stack Node.js application for publishing and discovering travel-property listings. Visitors can browse destinations and read reviews without an account. Registered users can create listings, manage only the listings they own, post ratings and comments, and remove only their own reviews.
+Wanderlust is a server-rendered travel listing application built with Node.js, Express, MongoDB, and EJS. Visitors can browse properties and reviews, while authenticated users can create listings, manage their own listings, and write or remove their own reviews.
 
-The application uses Express and EJS-Mate to render HTML on the server, Mongoose to model data in MongoDB, Passport Local for session-based authentication, Joi for server-side request validation, and Bootstrap for a responsive interface. Its current scope is a listing-and-review platform rather than a booking engine.
-
-### What makes it useful
-
-| Capability | Implementation |
-| --- | --- |
-| Public discovery | Responsive card grid with listing images, titles, and INR nightly prices |
-| Detailed listings | Property description, owner, price, location, country, and community reviews |
-| Account access | Username/password signup, login, logout, sessions, and flash feedback |
-| Protected content | Authentication is required before creating listings or reviews |
-| Ownership rules | Only a listing owner can edit or delete it; only a review author can delete their review |
-| Reliable listing/review input | Joi validation on the server plus Bootstrap validation feedback in the browser |
-| Data cleanup | Deleting a listing also removes the review documents referenced by it |
+The project follows an MVC-style structure: routers define endpoints, controllers handle request logic, Mongoose models manage data, and EJS-Mate renders reusable layouts and pages. It is a learning-focused listing platform, not a reservation or payment system.
 
 ## Features
 
-- Browse all travel listings without signing in.
-- Open a detailed page for each property and see its owner and reviews.
-- Register with an email address, username, and password.
-- Log in with Passport Local and return to the originally requested protected page.
-- Create listings with a title, description, image URL, nightly price, location, and country.
-- Fall back to a default image when a listing image is left empty.
-- Edit or delete a listing only when signed in as its owner.
-- Add a 1–5 rating and comment to a listing while authenticated.
-- Delete a review only when signed in as its author.
-- Show success and error feedback across redirects with flash messages.
-- Render shared navigation, alerts, error content, and footer elements through EJS-Mate layouts.
-- Forward rejected asynchronous handlers to a centralized error view.
-- Load an optional sample catalog of destinations for local development.
+- Public listing catalog with images, titles, and INR nightly prices
+- Detailed listing pages with owner, location, country, description, and reviews
+- Passport Local authentication with session-backed login and logout
+- Protected listing creation and review submission
+- Owner-only listing editing and deletion
+- Author-only review deletion
+- Joi validation for listing and review submissions
+- Bootstrap client-side form validation and responsive layouts
+- Flash messages for success and error feedback
+- Default image fallback for listings without an image URL
+- Automatic cleanup of referenced reviews when a listing is deleted
+- Reusable EJS-Mate layout, navbar, alerts, footer, and error page
+
 
 ## Screenshots
-
-<!-- Replace these placeholders with real captures in docs/screenshots/ when the UI is ready for release. -->
 
 <table>
   <tr>
     <td align="center">
-      <img src="./project gallery/Listings Catalog.jpg" alt="Listings catalog screenshot placeholder" width="100%" />
+      <img src="./project%20gallery/Listings%20Catalog.jpg" alt="Wanderlust listings catalog" width="100%" />
       <br />
-      <sub><strong>Listings catalog</sub>
+      <sub><strong>Listings catalog</strong></sub>
     </td>
     <td align="center">
-      <img src="./project gallery/listing and reviews.jpg" alt="Listing detail screenshot placeholder" width="100%" />
+      <img src="./project%20gallery/listing%20and%20reviews.jpg" alt="Wanderlust listing details and reviews" width="100%" />
       <br />
-      <sub><strong>Listing details</sub>
+      <sub><strong>Listing details and reviews</strong></sub>
     </td>
   </tr>
   <tr>
     <td align="center">
-      <img src="./project gallery/new listing.jpg" alt="Create listing screenshot placeholder" width="100%" />
+      <img src="./project%20gallery/new%20listing.jpg" alt="Wanderlust create listing form" width="100%" />
       <br />
-      <sub><strong>Create listing</sub>
+      <sub><strong>Create listing</strong></sub>
     </td>
     <td align="center">
-      <img src="./project gallery/SignUp.jpg" alt="Authentication screenshot placeholder" width="100%" />
+      <img src="./project%20gallery/SignUp.jpg" alt="Wanderlust signup form" width="100%" />
       <br />
-      <sub><strong>Authentication</sub>
+      <sub><strong>Signup form</strong></sub>
     </td>
   </tr>
 </table>
 
 ## Architecture
 
-Wanderlust is a server-rendered modular monolith. Request handlers live directly inside feature routers; the project does not currently have a separate controller or service layer.
+Wanderlust is a modular Express application with separate routing, controller, model, and view layers.
 
 ```text
-Browser ──HTTP/forms──► Express application ──► Feature router
-                                              ├── Sessions / Passport / Flash
-                                              ├── Auth and ownership middleware
-                                              ├── Joi request validation
-                                              ├── Mongoose ◄──► MongoDB
-                                              └── res.render(...)
-                                                        │
-                                                        ▼
-Browser ◄──rendered HTML── EJS-Mate layout and templates
+Browser
+   │
+   ▼
+Express app ──► Router ──► Middleware / Joi validation
+                              │
+                              ▼
+                          Controller
+                           ├──► Mongoose ──► MongoDB
+                           └──► EJS-Mate ──► HTML response
 ```
 
 | Layer | Responsibility |
 | --- | --- |
-| Application bootstrap | Connects to MongoDB, configures Express/EJS, sessions, Passport, shared locals, routers, errors, and the HTTP server |
-| Routers | Define user, listing, and nested review endpoints with inline request handlers |
-| Middleware | Require login, preserve return URLs, and enforce listing-owner/review-author permissions |
-| Models | Persist users, listings, and reviews and define references between them |
-| Validation | Check listing and review payloads with Joi before database writes |
-| Views | Render the layout, shared partials, forms, listing pages, and authentication pages |
-| Public assets | Provide custom CSS and browser-side Bootstrap form validation |
+| `app.js` | Configures MongoDB, sessions, Passport, view locals, routers, errors, and the server |
+| `routers/` | Maps URLs to middleware and controller functions |
+| `controllers/` | Handles listing, review, and user workflows |
+| `middleware.js` | Enforces login, listing ownership, and review authorship |
+| `models/` | Defines MongoDB documents and relationships |
+| `schema.js` | Validates listing and review request bodies with Joi |
+| `views/` | Renders EJS pages, layouts, and shared partials |
+| `public/` | Serves CSS and browser-side form validation |
 
 ## Tech Stack
 
-| Area | Technology | Role |
-| --- | --- | --- |
-| Runtime | Node.js + CommonJS | Server-side JavaScript runtime and module system |
-| Web framework | Express `5.2.1` | Routing, middleware, static assets, and HTTP handling |
-| Database | MongoDB | Document storage for users, listings, and reviews |
-| ODM | Mongoose `9.7.4` | Schemas, relationships, queries, and lifecycle middleware |
-| Templates | EJS `6.0.1` + EJS-Mate `4.0.0` | Server-side views, layouts, and reusable partials |
-| Authentication | Passport `0.7.0`, Passport Local, Passport Local Mongoose | Credential authentication, password hashing, sessions, and user serialization |
-| Session feedback | Express Session `1.19.0` + Connect Flash `0.1.1` | Login persistence and redirect-safe messages |
-| Validation | Joi `18.2.3` | Server-side listing and review validation |
-| HTTP forms | Method Override `3.0.0` | Enables `PUT` and `DELETE` semantics from HTML forms |
-| UI | Bootstrap `5.3.8`, Font Awesome `6.5.2`, custom CSS | Responsive layout, controls, icons, and styling |
-| Browser JavaScript | Vanilla JavaScript | Activates Bootstrap form-validation states |
+| Area | Technology |
+| --- | --- |
+| Runtime | Node.js, CommonJS |
+| Backend | Express `5.2.1` |
+| Database | MongoDB with Mongoose `9.7.4` |
+| Views | EJS `6.0.1` and EJS-Mate `4.0.0` |
+| Authentication | Passport, Passport Local, Passport Local Mongoose |
+| Sessions | Express Session and Connect Flash |
+| Validation | Joi `18.2.3` and Bootstrap form validation |
+| Frontend | Bootstrap `5.3.8`, Font Awesome `6.5.2`, custom CSS, vanilla JavaScript |
+| Form methods | Method Override |
 
 ## Project Structure
 
 ```text
 Full-Stack-project/
-├── app.js                         # Express bootstrap, DB, sessions, Passport, routes
-├── middleware.js                  # Login and ownership authorization
-├── schema.js                      # Joi request-validation schemas
-├── package.json                   # Project metadata and dependencies
-├── package-lock.json              # Reproducible dependency graph
-├── init/
-│   ├── index.js                   # Destructive MongoDB seed runner
-│   └── data.js                    # Sample destination listings
+├── app.js
+├── middleware.js
+├── schema.js
+├── controllers/
+│   ├── listings.js
+│   ├── reviews.js
+│   └── users.js
 ├── models/
-│   ├── listing.js                 # Listing schema and review cascade hook
-│   ├── review.js                  # Rating and comment schema
-│   └── user.js                    # Passport-enabled user schema
+│   ├── listing.js
+│   ├── review.js
+│   └── user.js
 ├── routers/
-│   ├── routesListing.js           # Listing CRUD routes
-│   ├── routesReviews.js           # Nested review routes
-│   └── routesUser.js              # Signup, login, and logout routes
+│   ├── routesListing.js
+│   ├── routesReviews.js
+│   └── routesUser.js
 ├── views/
-│   ├── layouts/
-│   │   └── boilerplate.ejs        # Shared document shell
 │   ├── includes/
-│   │   ├── alert.ejs              # Flash-message presentation
-│   │   ├── error.ejs              # Shared error presentation
-│   │   ├── footer.ejs             # Shared footer
-│   │   └── navbar.ejs             # Authentication-aware navigation
+│   ├── layouts/
 │   ├── listings/
-│   │   ├── index.ejs              # Listing catalog
-│   │   ├── show.ejs               # Details and reviews
-│   │   ├── new.ejs                # Listing creation form
-│   │   └── edit.ejs               # Listing editing form
 │   └── users/
-│       ├── signup.ejs             # Registration form
-│       └── login.ejs              # Login form
 ├── public/
 │   ├── css/
-│   │   └── style.css              # Application styling
 │   └── java script/
-│       └── script.js              # Client-side form validation
+├── project gallery/       # README screenshots
+├── init/
+│   ├── data.js
+│   └── index.js
 ├── utils/
-│   ├── ExpressError.js            # Custom application error
-│   └── wrapAsync.js               # Async route error adapter
-├── .gitignore
+│   ├── ExpressError.js
+│   └── wrapAsync.js
+├── package.json
+├── package-lock.json
 └── README.md
 ```
 
@@ -210,71 +186,54 @@ User 1 ───── authors ───── * Review
 Listing 1 ── references ── * Review
 ```
 
-| Model | Important fields | Relationships and behavior |
+| Model | Main fields | Notes |
 | --- | --- | --- |
-| `User` | `email`, plus `username`, password `hash`, and `salt` supplied by Passport Local Mongoose | Owns listings and authors reviews; email is required but is not currently verified or declared unique |
-| `Listing` | `title`, `description`, `image`, `price`, `location`, `country` | References one owner and many reviews; an empty image string receives a default image; deleting a listing cascades to its referenced reviews |
-| `Review` | `comment`, `rating`, `createdAt` | References one author; rating is constrained to 1–5 in both Joi and Mongoose |
+| `User` | `email` plus Passport-managed `username`, `hash`, and `salt` | Email is required but not yet verified or unique |
+| `Listing` | `title`, `description`, `image`, `price`, `location`, `country`, `owner`, `reviews` | Uses a default image and removes referenced reviews after deletion |
+| `Review` | `comment`, `rating`, `createdAt`, `author` | Rating is limited to 1–5 |
 
 ## Application Routes
 
-The application renders HTML rather than exposing a JSON API. Browser forms use `?_method=PUT` and `?_method=DELETE` where noted.
+The application renders HTML pages rather than exposing a JSON API.
 
-| Method | Route | Access | Behavior |
+| Method | Route | Access | Purpose |
 | --- | --- | --- | --- |
-| `GET` | `/` | Public | Returns the plain-text response `Working`; the catalog currently starts at `/listings` |
-| `GET` | `/signup` | Public | Renders the account-registration form |
-| `POST` | `/signup` | Public | Registers an email/username/password account and intends to establish a login session before redirecting to `/listings` |
+| `GET` | `/` | Public | Returns `Working` |
+| `GET` | `/signup` | Public | Renders the signup form |
+| `POST` | `/signup` | Public | Intended to create and log in a user; currently affected by a controller-name mismatch |
 | `GET` | `/login` | Public | Renders the login form |
-| `POST` | `/login` | Public | Authenticates with Passport; redirects failures to `/login` and successes to the saved destination or `/listings` |
-| `GET` | `/logout` | No explicit guard | Ends the current Passport session and redirects to `/listings` |
-| `GET` | `/listings` | Public | Fetches and renders every listing |
-| `GET` | `/listings/new` | Signed-in user | Renders the new-listing form; unauthenticated users are sent to `/login` |
-| `POST` | `/listings` | Signed-in user + valid body | Creates a listing and assigns the current user as its owner |
-| `GET` | `/listings/:id` | Public | Renders one listing with its owner, reviews, and populated review authors |
-| `GET` | `/listings/:id/edit` | Listing owner | Renders a prefilled edit form |
-| `PUT` | `/listings/:id` | Listing owner + valid body | Updates listing fields; submitted by the HTML form through method override |
-| `GET` | `/listings/:id/delete` | Listing owner | Deletes a listing and its referenced reviews, then returns to the catalog |
-| `POST` | `/listings/:id/reviews` | Signed-in user + valid body | Creates an authored review and attaches it to the listing |
-| `DELETE` | `/listings/:id/reviews/:reviewId` | Review author | Removes the review reference and document; submitted through method override |
-| `ALL` | Any unmatched route | Public | Forwards a `Page Not Found` error to the shared error view |
-
-> [!NOTE]
-> Listing deletion and logout are currently state-changing `GET` requests. A production revision should use `DELETE`/`POST` plus CSRF protection.
+| `POST` | `/login` | Public | Authenticates credentials and redirects to the saved destination or `/listings` |
+| `GET` | `/logout` | Public route | Logs out the current session |
+| `GET` | `/listings` | Public | Renders all listings |
+| `GET` | `/listings/new` | Signed-in user | Renders the listing form |
+| `POST` | `/listings` | Signed-in user | Validates and creates a listing owned by the current user |
+| `GET` | `/listings/:id` | Public | Renders a listing with owner and review details |
+| `GET` | `/listings/:id/edit` | Listing owner | Renders the edit form |
+| `PUT` | `/listings/:id` | Listing owner | Validates and updates a listing through method override |
+| `GET` | `/listings/:id/delete` | Listing owner | Deletes a listing and its referenced reviews |
+| `POST` | `/listings/:id/reviews` | Signed-in user | Validates and creates a review |
+| `DELETE` | `/listings/:id/reviews/:reviewId` | Review author | Deletes a review through method override |
+| `ALL` | Any unmatched route | Public | Renders the shared not-found error page |
 
 ## Authentication and Authorization
 
-Wanderlust uses local, session-backed authentication:
+- Passport Local checks the submitted username and password.
+- Passport Local Mongoose provides username storage, password hashing, authentication helpers, and user serialization.
+- Express Session keeps users signed in; the cookie is configured for seven days and is `httpOnly`.
+- Guests who request a protected page are redirected to `/login`, then returned to the original URL after successful authentication.
+- `isOwner` protects listing changes and `isReviewAuthor` protects review deletion.
+- EJS receives the current user through `res.locals.currentLoginStatus` so navigation and action buttons match the session.
 
-1. **Registration** — `User.register()` from Passport Local Mongoose stores the username and a derived password hash/salt alongside the required email. The raw password is not stored in the user document.
-2. **Login** — Passport Local validates the default `username` and `password` form fields.
-3. **Session** — Passport serializes the user identifier into an Express Session and restores `req.user` on later requests.
-4. **Return URL** — when a guest requests a protected page, `isLoggedIn` stores the original URL; a successful login returns the user there.
-5. **Template state** — `req.user` is exposed as `currentLoginStatus`, allowing EJS views to show the correct navigation and ownership controls.
-6. **Authorization** — `isOwner` protects listing mutations, while `isReviewAuthor` protects review deletion. These checks run on the server in addition to hiding controls in the UI.
-
-### Current session configuration
-
-| Setting | Current behavior |
-| --- | --- |
-| Store | Default in-memory Express Session store |
-| Lifetime | Seven days |
-| Cookie flags | `httpOnly: true`; `secure` and `sameSite` are not configured |
-| Session creation | `saveUninitialized: true`; anonymous visitors can receive a session cookie |
-| Resaving | `resave: false` |
-| Secret | Hard-coded development value in `app.js` |
-| User feedback | Connect Flash messages exposed to all EJS views |
-
-The current store and secret configuration are suitable only for local development. See [Environment Variables](#environment-variables) and [Current Limitations](#current-limitations) before deploying.
+The current session secret is hard-coded and sessions use the default in-memory store. Both should be replaced before deployment.
 
 ## Getting Started
 
 ### Prerequisites
 
-- [Git](https://git-scm.com/)
-- [Node.js](https://nodejs.org/) `20.19.0` or newer (required by the current dependency graph)
-- npm, included with Node.js
-- A local [MongoDB](https://www.mongodb.com/docs/manual/installation/) server listening on `127.0.0.1:27017`
+- Git
+- Node.js `20.19.0` or newer
+- npm
+- MongoDB running locally on `127.0.0.1:27017`
 
 ### Installation
 
@@ -285,190 +244,166 @@ The current store and secret configuration are suitable only for local developme
    cd Full-Stack-project
    ```
 
-2. Install the locked dependencies.
+2. Install dependencies.
 
    ```bash
    npm ci
    ```
 
-   Use `npm install` instead when intentionally updating the lockfile.
+3. Start MongoDB.
 
-3. Start MongoDB and confirm that the local server accepts connections at:
-
-   ```text
-   mongodb://127.0.0.1:27017/WanderLust
-   ```
-
-4. Start the application.
+4. Run the application.
 
    ```bash
    node app.js
    ```
 
-5. Open the listing catalog:
+5. Open `http://localhost:8080/listings`.
 
-   ```text
-   http://localhost:8080/listings
-   ```
+There is currently no `start` or `dev` script. The root route only returns `Working`.
 
-> [!NOTE]
-> There is currently no `start` or `dev` script in `package.json`; `node app.js` is the supported launch command. The root URL (`/`) only returns `Working`.
+### Testing
+
+Automated tests are not implemented. The existing `npm test` command is only a failing placeholder. For a basic syntax check, run:
+
+```bash
+node --check app.js
+```
+
+Run the same command for any JavaScript file you change.
+
+### Deployment
+
+The current configuration is intended for local development. Before deployment, move secrets and connection settings to environment variables, use a hosted MongoDB database, add a persistent session store, configure secure cookies, and add a production start script.
 
 ## Environment Variables
 
-**No environment variables are consumed by the current codebase.** The database address, session secret, and port are hard-coded, so creating a `.env` file alone will not change the application.
+The current code does **not** read environment variables.
 
-| Recommended variable | Current source | Purpose | Status |
-| --- | --- | --- | --- |
-| `MONGO_URI` | `app.js` and `init/index.js` | MongoDB connection string | Not wired yet |
-| `SESSION_SECRET` | `app.js` | Strong secret used to sign session identifiers | Not wired yet |
-| `PORT` | `app.js` | HTTP listening port | Not wired yet |
-| `NODE_ENV` | Not present | Development/production behavior switch | Not wired yet |
+| Recommended variable | Current value/source | Status |
+| --- | --- | --- |
+| `MONGO_URI` | Local URI hard-coded in `app.js` and `init/index.js` | Not implemented |
+| `SESSION_SECRET` | Hard-coded in `app.js` | Not implemented |
+| `PORT` | `8080` in `app.js` | Not implemented |
+| `NODE_ENV` | Not used | Not implemented |
 
-After the application is updated to read `process.env`, a local configuration could look like this:
-
-```dotenv
-# Proposed configuration — this file is not read by the current implementation.
-MONGO_URI=mongodb://127.0.0.1:27017/WanderLust
-SESSION_SECRET=replace-with-a-long-random-secret
-PORT=8080
-NODE_ENV=development
-```
-
-Before adopting this configuration, wire the variables into both the app and seed script, add `.env` to `.gitignore`, and never commit real secrets. For local file-based configuration, launch with `node --env-file=.env app.js` or configure a dotenv loader; reading `process.env` does not load a `.env` file by itself. Production deployments should also use a persistent session store such as MongoDB or Redis.
+Creating a `.env` file will not affect the application until these values are read from `process.env`. Add `.env` to `.gitignore` before storing local secrets.
 
 ## Database Seeding
 
-The repository contains 29 sample destination listings in `init/data.js`, but the seed runner is intentionally **not** part of the normal setup path.
+`init/data.js` contains 29 sample listings.
 
 > [!CAUTION]
-> `node init/index.js` runs `Listing.deleteMany({})` first. It deletes every listing in the configured database, cannot restore them, and then assigns one hard-coded owner ObjectId to all samples. The script does not create that user.
+> `node init/index.js` deletes every listing in the configured database before inserting the samples. It also assigns a hard-coded owner ID and does not create that user.
 
-For a disposable local database only:
+For disposable local data:
 
-1. Register a local user.
-2. Find that user's MongoDB ObjectId with MongoDB Compass or `mongosh`.
-3. Replace the hard-coded owner ID in `init/index.js` with the real user ID.
-4. Confirm that `WanderLust` contains no listing data you need to keep.
-5. Run:
-
-   ```bash
-   node init/index.js
-   ```
-
-   The script does not disconnect Mongoose. If the process remains active after `data was initialized`, stop it with <kbd>Ctrl</kbd>+<kbd>C</kbd>.
-
-For the safest first run, skip seeding, sign in, and create listings through the UI.
+1. Create a user and obtain its MongoDB ObjectId.
+2. Replace the owner ID in `init/index.js`.
+3. Confirm that no listing data needs to be kept.
+4. Run `node init/index.js`.
+5. Stop the process with <kbd>Ctrl</kbd>+<kbd>C</kbd> if it remains connected after seeding.
 
 ## How to Use Wanderlust
 
-1. **Start the services** — run MongoDB, launch `node app.js`, and visit `/listings`.
-2. **Browse publicly** — open any listing card to read property details and community reviews.
-3. **Create an account** — select **SignUp**, then enter an email, username, and password.
-4. **Log in** — authenticate from `/login`. If login was required by a protected page, Wanderlust redirects you back to that page.
-5. **Publish a listing** — choose **Add new Listings**, complete every required field, optionally provide an image URL, and submit.
-6. **Manage your listing** — open a listing you own to reveal its **Edit details** and **Delete listing** controls.
-7. **Leave a review** — while signed in, choose a rating from 1 to 5, enter a comment, and submit it from a listing page.
-8. **Manage your review** — the delete control appears only on reviews authored by your account.
-9. **Log out** — use the navigation link to end the current session and return to the catalog.
+1. Start MongoDB and run `node app.js`.
+2. Visit `/listings` to browse the catalog.
+3. Open a card to view listing details and reviews.
+4. Log in with an existing account to create a listing or review.
+5. Open a listing you own to edit or delete it.
+6. Delete only reviews authored by your account.
+7. Use the navbar to log out.
 
-Wanderlust does not currently accept reservations or payments; nightly prices are display-only.
+Signup submission currently needs the handler fix listed below. Prices are informational only; the project does not support bookings or payments.
 
 ## Validation and Error Handling
 
-| Input or event | Current handling |
+| Area | Current behavior |
 | --- | --- |
-| Listing submission | Joi requires title, description, location, country, and a non-negative price; image may be blank or null |
-| Review submission | Joi requires a comment and a numeric rating from 1 through 5 |
-| Signup and login | Browser fields are required and signup uses `type="email"`, but there is no server-side Joi schema for credentials; email is not normalized, unique, or verified |
-| Browser forms | Bootstrap validation prevents obviously incomplete forms and displays validation states |
-| Async failures | `wrapAsync` forwards rejected route handlers to the Express error middleware |
-| Missing listing on `GET /listings/:id` | A flash error redirects the visitor to `/listings` |
-| Unknown route | A custom `ExpressError` renders the shared error page |
-| Listing deletion | Mongoose post middleware removes reviews referenced by the deleted listing |
+| Listings | Joi requires title, description, location, country, and a non-negative price |
+| Reviews | Joi requires a comment and rating from 1 to 5 |
+| Browser forms | Bootstrap validation displays client-side feedback |
+| Async routes | `wrapAsync` forwards rejected controller promises |
+| Missing listing | The show controller flashes an error and returns to `/listings` |
+| Unknown route | `ExpressError` sends unmatched routes to the shared error view |
+| Listing deletion | Mongoose middleware removes referenced reviews |
+
+Authentication forms do not have server-side Joi validation. The review slider also allows `0` in the browser even though Joi requires at least `1`.
 
 ## Current Limitations
 
-Wanderlust is an active development project and needs the following work before production use:
-
-| Area | Current state | Production direction |
-| --- | --- | --- |
-| Configuration | MongoDB URI, session secret, and port are hard-coded | Read validated environment variables and rotate all secrets |
-| Sessions | Uses Express Session's in-memory store | Use a persistent store, secure cookies, `sameSite`, and environment-aware settings |
-| Request security | No CSRF protection, rate limiting, security headers, or explicit sanitization layer | Add CSRF defenses, Helmet, throttling, input hardening, and security tests |
-| Account validation | Authentication forms have no server-side request schema; email is only marked required in Mongoose | Validate and normalize credentials, enforce the intended email policy, and add verification |
-| HTTP semantics | Listing deletion and logout use `GET` | Move mutations to `DELETE`/`POST` and protect them against CSRF |
-| Signup flow | The handler attempts duplicate flash/redirect responses and its login callback lacks a defined `next` parameter | Consolidate the response path and add authentication integration tests |
-| Error responses | The shared renderer does not apply the stored HTTP status code | Send the correct `4xx`/`5xx` status before rendering |
-| Record integrity | Ownership guards assume referenced records exist, and review deletion does not confirm that `:reviewId` belongs to the supplied listing | Add defensive not-found checks and validate the parent-child relationship before mutation |
-| Seed data | Destructive reset with a hard-coded owner that may not exist | Parameterize the owner, create seed users, and require explicit confirmation |
-| Developer scripts | No `start`/`dev` script; `npm test` is a failing placeholder; package `main` points to a missing file | Add reliable lifecycle, lint, formatting, and test scripts |
-| Incomplete links | Footer links for privacy and terms have no matching routes | Implement the pages or remove the links |
-| Product scope | No booking calendar, search, maps, uploads, wishlist, chat, payments, or admin tools | Deliver these incrementally through the roadmap below |
+| Area | Current limitation |
+| --- | --- |
+| Signup | The router calls `createAccout`, while the controller exports `createAccount`; the controller also has duplicate redirect paths |
+| Configuration | Database URI, session secret, and port are hard-coded |
+| Sessions | Uses the development-only in-memory store without `secure` or `sameSite` cookie settings |
+| HTTP safety | Listing deletion and logout use `GET`; CSRF protection is not implemented |
+| Validation | Authentication input is not validated on the server, and email is not normalized, unique, or verified |
+| Missing records | Ownership middleware assumes the listing, review, owner, and author exist |
+| Error responses | The error handler renders a page without applying the stored HTTP status code |
+| Seed script | Deletes all listings, uses one hard-coded owner, and keeps the database connection open |
+| Tooling | No start, development, lint, or working test scripts |
+| UI links | Privacy and terms footer links do not have routes |
 
 ## Future Scope and Roadmap
 
-### 1. Trust, security, and quality foundation
+The near-term roadmap focuses on improvements that fit the current Express and EJS application.
 
-- [ ] **Email verification** — issue expiring, single-use verification tokens and restrict sensitive actions until an address is verified.
-- [ ] **Password reset** — add rate-limited reset requests, short-lived hashed tokens, session revocation, and neutral responses that do not reveal whether an account exists.
-- [ ] **Hardened authentication** — fix the signup response flow, add optional passkeys, strengthen cookies, rotate session identifiers, and support a persistent session store.
-- [ ] **Testing** — cover models and middleware with unit tests, routes/auth with integration tests, and primary user journeys with end-to-end browser tests.
-- [ ] **Docker** — provide repeatable Node and MongoDB containers, health checks, non-root runtime configuration, and a development Compose file.
-- [ ] **CI/CD** — use an automated pipeline for dependency installation, linting, tests, security checks, container builds, preview deployments, and controlled production releases.
+### Stability and security
 
-### 2. Discovery and retention
+- [ ] Fix the signup controller reference and keep one post-registration redirect
+- [ ] Move the MongoDB URI, session secret, and port to environment variables
+- [ ] Add server-side validation for signup and login
+- [ ] Use a persistent session store and secure cookie settings
+- [ ] Replace state-changing `GET` routes and add CSRF protection
+- [ ] Add defensive checks for missing listings, reviews, owners, and authors
+- [ ] Return correct HTTP status codes from the error handler
 
-- [ ] **Search, filters, and maps** — add pagination, price/country filters, full-text search, GeoJSON locations, nearby search, and map-bounds queries.
-- [ ] **Wishlist** — let authenticated users save unique listing references, organize favorites, and quickly revisit them across devices.
-- [ ] **Managed image uploads** — replace arbitrary external URLs with validated object storage, responsive formats, thumbnails, and automatic optimization.
-- [ ] **Notifications** — build preference-aware in-app, email, and web-push notifications for messages, reviews, listing changes, and future booking events.
-- [ ] **Progressive Web App (PWA)** — add a manifest, installability, offline fallbacks, cached recently viewed/saved listings, and safe background updates.
+### User experience
 
-### 3. Marketplace capabilities
+- [ ] Add email verification and password reset
+- [ ] Add a basic profile page with editable account details
+- [ ] Upload listing images to managed storage instead of accepting only URLs
+- [ ] Add pagination and simple search by title, location, or country
+- [ ] Show an average rating on each listing
+- [ ] Improve mobile spacing, form labels, empty states, and accessibility
 
-- [ ] **Availability and reservations** — model date ranges, guest counts, pricing rules, inventory locks, cancellations, and time-zone-safe calendars.
-- [ ] **Real-time chat** — give guests and hosts listing-scoped conversations with delivery state, unread counts, moderation tools, reconnect recovery, and durable history.
-- [ ] **Payments** — add marketplace-ready checkout, idempotent webhooks, host onboarding and payouts, platform fees, receipts, refunds, disputes, and reconciliation.
-- [ ] **Admin panel** — introduce role-based access for user/listing/review moderation, reports, audit logs, verification queues, and operational metrics.
+### Development and deployment
 
-### 4. Intelligence, scale, and reliability
+- [ ] Add unit and route tests for validation, authentication, and authorization
+- [ ] Add `start` and `dev` scripts plus linting and formatting
+- [ ] Add Docker and Docker Compose for the app and local MongoDB
+- [ ] Configure a production database, session store, logging, and deployment workflow
 
-- [ ] **AI recommendations** — combine semantic listing embeddings with price/location constraints and privacy-aware signals from views, wishlists, and reviews; always retain explainable non-AI discovery paths.
-- [ ] **Performance improvements** — add database indexes, pagination, lean projections, query analysis, responsive/lazy-loaded images, caching, compression, CDN delivery, and Core Web Vitals monitoring.
-- [ ] **Observability** — introduce structured logs, traces, metrics, uptime checks, error tracking, dashboards, and actionable alerts.
-- [ ] **Accessibility and localization** — target WCAG 2.2 AA, complete keyboard and screen-reader flows, support localized dates/currencies, and make text translatable.
+Bookings, payments, real-time chat, AI recommendations, and other marketplace-scale features are outside the current near-term scope.
 
 ## Latest Trends and Opportunities
 
-The following opportunities reflect web-platform and marketplace directions reviewed in **July 2026**. They are recommendations, not implemented features.
+Practical improvements that fit this codebase:
 
-| Trend | How it can enhance Wanderlust | Expected value |
-| --- | --- | --- |
-| [Hybrid and vector search](https://www.mongodb.com/docs/atlas/atlas-vector-search/hybrid-search/vector-search-with-full-text-search/) | Embed listing text, interpret natural-language intent such as “quiet beach stay under ₹3,000,” and combine semantic results with exact price/location filters | More relevant discovery and a practical foundation for AI recommendations |
-| [Passkeys with WebAuthn Level 3](https://www.w3.org/TR/webauthn-3/) | Offer phishing-resistant sign-in alongside the existing credential flow while preserving account-recovery options; Level 3 is currently a W3C Candidate Recommendation Snapshot | Less password friction and stronger account security |
-| [Cross-document View Transitions](https://developer.chrome.com/docs/web-platform/view-transitions/cross-document) | Progressively animate catalog-to-detail navigation in the existing multi-page EJS app without requiring a SPA rewrite, while preserving normal navigation as the fallback | A more polished interface with limited architectural disruption |
-| [Installable, offline-capable PWAs](https://www.w3.org/TR/appmanifest/) | Combine a web app manifest with [service workers](https://www.w3.org/TR/service-workers/) and opt-in [push](https://www.w3.org/TR/push-api/) to cache the application shell and saved/recent listings and deliver relevant updates | Better repeat engagement and resilience on unreliable travel networks |
-| [Resilient real-time experiences](https://socket.io/docs/v4/rooms/) | Use authenticated rooms and [connection-state recovery](https://socket.io/docs/v4/connection-state-recovery) for chat, typing indicators, presence, and future reservation updates | Faster guest-host communication despite temporary disconnects |
-| [Geospatial discovery](https://www.mongodb.com/docs/manual/core/indexes/index-types/geospatial/2dsphere/) | Store coordinates as GeoJSON and apply `2dsphere` indexes for nearby, radius, and map-viewport searches | Location-aware browsing that scales beyond plain location strings |
-| [Marketplace-native payment infrastructure](https://docs.stripe.com/connect/how-connect-works) | Once reservations exist, use connected-account onboarding, platform fees, payouts, refunds, disputes, and webhook-driven reconciliation rather than a basic one-party checkout | A safer path from listing platform to two-sided marketplace |
-| [Core Web Vitals and inclusive UX](https://web.dev/articles/defining-core-web-vitals-thresholds) | Measure LCP, INP, and CLS; optimize listing images and queries; and pair performance work with [WCAG 2.2](https://www.w3.org/TR/WCAG22/) accessibility reviews | Faster discovery, broader access, a more consistent experience, and measurable quality |
+| Practice | Application in Wanderlust |
+| --- | --- |
+| Progressive enhancement | Keep EJS rendering as the baseline and add JavaScript only where it improves forms or navigation |
+| Responsive image delivery | Store uploads in a managed service and serve appropriately sized WebP or AVIF images |
+| Accessible responsive UI | Improve keyboard navigation, focus states, labels, contrast, and small-screen layouts |
+| Automated quality checks | Run syntax checks and tests in CI after a test suite is added |
+| Reproducible development | Use Docker Compose to provide consistent Node.js and MongoDB environments |
+
+These changes improve the existing application without requiring a frontend rewrite or a much larger product scope.
 
 ## Contributing
 
-Contributions, issue reports, and feature proposals are welcome.
-
 1. Fork the repository.
-2. Create a focused branch: `git checkout -b feature/short-description`.
-3. Make and manually verify your change; add automated tests when test infrastructure is introduced.
-4. Commit with a clear message.
-5. Push the branch and open a pull request describing the behavior, screenshots, and verification performed.
+2. Create a focused branch.
+3. Keep changes small and related to one issue.
+4. Verify affected routes and run available checks.
+5. Open a pull request with a clear description and screenshots for UI changes.
 
-Please avoid mixing unrelated refactors with a feature or bug fix, and never commit credentials or local database data.
+Do not commit credentials, local database files, or generated dependencies.
 
 ## License
 
-The package metadata currently declares the project under the **ISC License**, but the repository does not yet include a standalone `LICENSE` file. Add one so the terms are explicit to visitors and downstream users.
+`package.json` declares the project under the ISC License. A standalone `LICENSE` file has not been added yet.
 
 ---
 
