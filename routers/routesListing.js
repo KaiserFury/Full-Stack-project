@@ -24,22 +24,26 @@ const validateListing = (req, res, next) => {
   }
 };
 
-// Fetch all listings and render to template
-router.get("/", wrapAsync(listingController.index));
-
+router
+  .route("/")
+  .get(wrapAsync(listingController.index)) // Fetch all listings and render to template
+  .post(
+    isLoggedIn,
+    validateListing,
+    wrapAsync(listingController.saveNewListing), // Create a listing and redirect to the listing catalog
+  );
 // Render form to create a new listing
 router.get("/new", isLoggedIn, listingController.newListingForm);
 
-// Create a listing and redirect to the listing catalog
-router.post(
-  "/",
-  isLoggedIn,
-  validateListing,
-  wrapAsync(listingController.saveNewListing),
-);
-
-// Fetch and display a single listing data by MongoDB ID
-router.get("/:id", wrapAsync(listingController.show));
+router
+  .route("/:id")
+  .get(wrapAsync(listingController.show)) // Fetch and display a single listing data by MongoDB ID
+  .put(
+    isLoggedIn,
+    isOwner,
+    validateListing,
+    wrapAsync(listingController.updateListing), // Update listing with form data and redirect to listing details
+  );
 
 // Render form to edit an existing listing
 router.get(
@@ -47,15 +51,6 @@ router.get(
   isLoggedIn,
   isOwner,
   wrapAsync(listingController.editListing),
-);
-
-// Update listing with form data and redirect to listing details
-router.put(
-  "/:id",
-  isLoggedIn,
-  isOwner,
-  validateListing,
-  wrapAsync(listingController.updateListing),
 );
 
 // Delete a listing by ID and return to the listings overview

@@ -200,7 +200,7 @@ The application renders HTML pages rather than exposing a JSON API.
 | --- | --- | --- | --- |
 | `GET` | `/` | Public | Returns `Working` |
 | `GET` | `/signup` | Public | Renders the signup form |
-| `POST` | `/signup` | Public | Intended to create and log in a user; currently affected by a controller-name mismatch |
+| `POST` | `/signup` | Public | Intended to create and log in a user |
 | `GET` | `/login` | Public | Renders the login form |
 | `POST` | `/login` | Public | Authenticates credentials and redirects to the saved destination or `/listings` |
 | `GET` | `/logout` | Public route | Logs out the current session |
@@ -214,6 +214,9 @@ The application renders HTML pages rather than exposing a JSON API.
 | `POST` | `/listings/:id/reviews` | Signed-in user | Validates and creates a review |
 | `DELETE` | `/listings/:id/reviews/:reviewId` | Review author | Deletes a review through method override |
 | `ALL` | Any unmatched route | Public | Renders the shared not-found error page |
+
+> [!NOTE]
+> Listing deletion and logout are currently state-changing `GET` requests. A production revision should use `DELETE`/`POST` plus CSRF protection.
 
 ## Authentication and Authorization
 
