@@ -12,13 +12,8 @@ const listingSchema = new Schema({
   },
   // Custom setter: convert empty strings to default image to prevent broken image links
   image: {
-    type: String,
-    default:
-      "https://media.istockphoto.com/id/1442179368/photo/maldives-island.jpg?s=612x612&w=0&k=20&c=t38FJQ6YhyyZGN91A8tpn3nz9Aqcy_aXolImsOXOZ34=",
-    set: (v) =>
-      v === ""
-        ? "https://media.istockphoto.com/id/1442179368/photo/maldives-island.jpg?s=612x612&w=0&k=20&c=t38FJQ6YhyyZGN91A8tpn3nz9Aqcy_aXolImsOXOZ34="
-        : v,
+    url: String,
+    filename: String,
   },
   price: {
     type: Number,

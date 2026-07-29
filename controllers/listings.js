@@ -11,11 +11,13 @@ module.exports.newListingForm = (req, res) => {
 
 module.exports.saveNewListing = async (req, res, next) => {
   let newListingData = req.body;
-  console.log(req.user._id);
-  // Derive ownership from the authenticated session, never from submitted form data.
-  newListingData.listing.owner = req.user._id;
+  let filename = req.file.originalname;
+  let url = req.file.path;
+  
   const newListing = new Listing(newListingData.listing);
-
+  // Derive ownership from the authenticated session, never from submitted form data.
+  newListing.owner = req.user._id;
+  newListing.image = {url, filename};
   await newListing.save();
   req.flash("success", "New Property is added ");
   res.redirect("/listings");

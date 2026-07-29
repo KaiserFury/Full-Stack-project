@@ -14,6 +14,12 @@ const { isLoggedIn, isOwner } = require("../middleware.js");
 
 const listingController = require("../controllers/listings.js");
 
+
+const {storage, cloudinary } = require("../cloudConfig.js");
+const multer = require("multer");
+const upload = multer({ storage });
+
+
 // Reject invalid payloads before controller and database work
 const validateListing = (req, res, next) => {
   let result = listingSchema.validate(req.body);
@@ -30,8 +36,10 @@ router
   .post(
     isLoggedIn,
     validateListing,
+    upload.single('listing[image]'),
     wrapAsync(listingController.saveNewListing), // Create a listing and redirect to the listing catalog
   );
+  
 // Render form to create a new listing
 router.get("/new", isLoggedIn, listingController.newListingForm);
 
