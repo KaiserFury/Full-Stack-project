@@ -64,7 +64,7 @@ The project follows an MVC-style structure: routers define endpoints, controller
 - Joi validation for listing and review submissions
 - Bootstrap client-side form validation and responsive layouts
 - Flash messages for success and error feedback
-- Default image fallback for listings without an image URL
+- Cloudinary-backed image storage for uploaded listing images
 - Automatic cleanup of referenced reviews when a listing is deleted
 - Reusable EJS-Mate layout, navbar, alerts, footer, and error page
 
@@ -122,6 +122,7 @@ Express app ──► Router ──► Middleware / Joi validation
 | `middleware.js` | Enforces login, listing ownership, and review authorship |
 | `models/` | Defines MongoDB documents and relationships |
 | `schema.js` | Validates listing and review request bodies with Joi |
+| `cloudConfig.js` | Configures Cloudinary and Multer storage for listing images |
 | `views/` | Renders EJS pages, layouts, and shared partials |
 | `public/` | Serves CSS and browser-side form validation |
 
@@ -136,6 +137,7 @@ Express app ──► Router ──► Middleware / Joi validation
 | Authentication | Passport, Passport Local, Passport Local Mongoose |
 | Sessions | Express Session and Connect Flash |
 | Validation | Joi `18.2.3` and Bootstrap form validation |
+| Image uploads | Cloudinary, Multer, and Multer Storage Cloudinary |
 | Frontend | Bootstrap `5.3.8`, Font Awesome `6.5.2`, custom CSS, vanilla JavaScript |
 | Form methods | Method Override |
 
@@ -143,6 +145,7 @@ Express app ──► Router ──► Middleware / Joi validation
 
 ```text
 Full-Stack-project/
+├── cloudConfig.js
 ├── app.js
 ├── middleware.js
 ├── schema.js
@@ -189,7 +192,7 @@ Listing 1 ── references ── * Review
 | Model | Main fields | Notes |
 | --- | --- | --- |
 | `User` | `email` plus Passport-managed `username`, `hash`, and `salt` | Email is required but not yet verified or unique |
-| `Listing` | `title`, `description`, `image`, `price`, `location`, `country`, `owner`, `reviews` | Uses a default image and removes referenced reviews after deletion |
+| `Listing` | `title`, `description`, `image.url`, `image.filename`, `price`, `location`, `country`, `owner`, `reviews` | Stores Cloudinary image details and removes referenced reviews after deletion |
 | `Review` | `comment`, `rating`, `createdAt`, `author` | Rating is limited to 1–5 |
 
 ## Application Routes
@@ -206,7 +209,7 @@ The application renders HTML pages rather than exposing a JSON API.
 | `GET` | `/logout` | Public route | Logs out the current session |
 | `GET` | `/listings` | Public | Renders all listings |
 | `GET` | `/listings/new` | Signed-in user | Renders the listing form |
-| `POST` | `/listings` | Signed-in user | Validates and creates a listing owned by the current user |
+| `POST` | `/listings` | Signed-in user | Uploads an image and creates a listing owned by the current user |
 | `GET` | `/listings/:id` | Public | Renders a listing with owner and review details |
 | `GET` | `/listings/:id/edit` | Listing owner | Renders the edit form |
 | `PUT` | `/listings/:id` | Listing owner | Validates and updates a listing through method override |
@@ -237,6 +240,7 @@ The current session secret is hard-coded and sessions use the default in-memory 
 - Node.js `20.19.0` or newer
 - npm
 - MongoDB running locally on `127.0.0.1:27017`
+- A Cloudinary account
 
 ### Installation
 
@@ -253,15 +257,17 @@ The current session secret is hard-coded and sessions use the default in-memory 
    npm ci
    ```
 
-3. Start MongoDB.
+3. Create a `.env` file with the Cloudinary variables listed below.
 
-4. Run the application.
+4. Start MongoDB.
+
+5. Run the application.
 
    ```bash
    node app.js
    ```
 
-5. Open `http://localhost:8080/listings`.
+6. Open `http://localhost:8080/listings`.
 
 There is currently no `start` or `dev` script. The root route only returns `Working`.
 
@@ -281,16 +287,22 @@ The current configuration is intended for local development. Before deployment, 
 
 ## Environment Variables
 
-The current code does **not** read environment variables.
+Development mode loads `.env` through Dotenv. Cloudinary reads these variables when configuring image storage:
 
-| Recommended variable | Current value/source | Status |
+| Variable | Purpose | Status |
 | --- | --- | --- |
-| `MONGO_URI` | Local URI hard-coded in `app.js` and `init/index.js` | Not implemented |
-| `SESSION_SECRET` | Hard-coded in `app.js` | Not implemented |
-| `PORT` | `8080` in `app.js` | Not implemented |
-| `NODE_ENV` | Not used | Not implemented |
+| `CLOUD_NAME` | Cloudinary cloud name | Required for uploads |
+| `API_KEY` | Cloudinary API key | Required for uploads |
+| `API_SECRET` | Cloudinary API secret | Required for uploads |
+| `NODE_ENV` | Skips local `.env` loading when set to `production` | Optional |
 
-Creating a `.env` file will not affect the application until these values are read from `process.env`. Add `.env` to `.gitignore` before storing local secrets.
+```env
+CLOUD_NAME=your_cloud_name
+API_KEY=your_api_key
+API_SECRET=your_api_secret
+```
+
+The MongoDB URI, session secret, and port remain hard-coded. `.env` is ignored by Git and must not be committed.
 
 ## Database Seeding
 
@@ -312,12 +324,12 @@ For disposable local data:
 1. Start MongoDB and run `node app.js`.
 2. Visit `/listings` to browse the catalog.
 3. Open a card to view listing details and reviews.
-4. Log in with an existing account to create a listing or review.
+4. Log in with an existing account to create a listing with an uploaded image or write a review.
 5. Open a listing you own to edit or delete it.
 6. Delete only reviews authored by your account.
 7. Use the navbar to log out.
 
-Signup submission currently needs the handler fix listed below. Prices are informational only; the project does not support bookings or payments.
+Prices are informational only; the project does not support bookings or payments.
 
 ## Validation and Error Handling
 
@@ -331,14 +343,14 @@ Signup submission currently needs the handler fix listed below. Prices are infor
 | Unknown route | `ExpressError` sends unmatched routes to the shared error view |
 | Listing deletion | Mongoose middleware removes referenced reviews |
 
-Authentication forms do not have server-side Joi validation. The review slider also allows `0` in the browser even though Joi requires at least `1`.
+Authentication forms do not have server-side Joi validation.
 
 ## Current Limitations
 
 | Area | Current limitation |
 | --- | --- |
-| Signup | The router calls `createAccout`, while the controller exports `createAccount`; the controller also has duplicate redirect paths |
 | Configuration | Database URI, session secret, and port are hard-coded |
+| Image uploads | Listing validation currently runs before Multer parses the multipart form, so new listing uploads can fail validation |
 | Sessions | Uses the development-only in-memory store without `secure` or `sameSite` cookie settings |
 | HTTP safety | Listing deletion and logout use `GET`; CSRF protection is not implemented |
 | Validation | Authentication input is not validated on the server, and email is not normalized, unique, or verified |
@@ -354,7 +366,6 @@ The near-term roadmap focuses on improvements that fit the current Express and E
 
 ### Stability and security
 
-- [ ] Fix the signup controller reference and keep one post-registration redirect
 - [ ] Move the MongoDB URI, session secret, and port to environment variables
 - [ ] Add server-side validation for signup and login
 - [ ] Use a persistent session store and secure cookie settings
@@ -366,7 +377,6 @@ The near-term roadmap focuses on improvements that fit the current Express and E
 
 - [ ] Add email verification and password reset
 - [ ] Add a basic profile page with editable account details
-- [ ] Upload listing images to managed storage instead of accepting only URLs
 - [ ] Add pagination and simple search by title, location, or country
 - [ ] Show an average rating on each listing
 - [ ] Improve mobile spacing, form labels, empty states, and accessibility
