@@ -11,13 +11,13 @@ module.exports.newListingForm = (req, res) => {
 
 module.exports.saveNewListing = async (req, res, next) => {
   let newListingData = req.body;
-  let filename = req.file.originalname;
   let url = req.file.path;
+  let filename = req.file.filename;
   
   const newListing = new Listing(newListingData.listing);
   // Derive ownership from the authenticated session, never from submitted form data.
   newListing.owner = req.user._id;
-  newListing.image = {url, filename};
+  newListing.image = { url, filename };
   await newListing.save();
   req.flash("success", "New Property is added ");
   res.redirect("/listings");
@@ -45,20 +45,33 @@ module.exports.show = async (req, res) => {
 module.exports.editListing = async (req, res) => {
   let { id } = req.params;
   const listing = await Listing.findById(id);
-  // If no listing is found for the given ID, show an error message
-  // and redirect the user back to the listings page.
-  if (!listing) {
-    req.flash("error", "bkl manja! ");
-    return res.redirect("/listings");
-  }
 
-  res.render("listings/edit.ejs", { listing });
+  
+  if (!listing) {
+    req.flash("error", "bkl manja! "); // If no listing is found for the given ID, show an error message
+    return res.redirect("/listings");   // and redirect the user back to the listings page.
+  }
+  let mainUrl = listing.image.url;
+  let modifiedUrl = mainUrl.replace("/upload", "/upload/h_300,w_250");
+
+  res.render("listings/edit.ejs", { listing, modifiedUrl });
 };
 
 module.exports.updateListing = async (req, res) => {
   let { id } = req.params;
-  await Listing.findByIdAndUpdate(id, { ...req.body.listing });
-  if (req) req.flash("success", "Edit Successful ");
+  let listing = await Listing.findById(id);
+
+  if (!listing) {
+    req.flash("error", "Cannot find that listing!");
+    return res.redirect("/listings");
+  }
+
+  listing.set(req.body.listing);
+  if (req.file) {
+    listing.image = { url: req.file.path, filename: req.file.filename };
+  }
+  await listing.save();
+  req.flash("success", "Edit Successful ");
   res.redirect(`/listings/${id}`);
 };
 

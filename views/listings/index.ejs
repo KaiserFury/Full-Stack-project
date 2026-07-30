@@ -1,9 +1,27 @@
 <% layout('layouts/boilerplate') -%>
+    <style>
+        #filters {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+        /* .filter {
+            text-align: center;
+        } */
+    </style>
 
     <body>
-        <h1>Welcome</h1>
+        <div id="filters">
+                <div class="filter">
+                    <div class="trending">
+                        <i class="fa-solid fa-fire fa-float fa-xl"></i>
+                        <p>Trending</p>
+                    </div>
+                </div>
+            </div>
         <!-- Render each listing as a responsive card in a compact grid -->
         <div class="row row-cols-lg-3 row-cols-md-2 row-cols-sm-1">
+            
+        
             <%for(let list of allListing){%>
                 <a href="/listings/<%= list.id%>" class="listing-link-a">
                     <div class="card col listing-card ">

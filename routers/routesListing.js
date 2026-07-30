@@ -35,8 +35,8 @@ router
   .get(wrapAsync(listingController.index)) // Fetch all listings and render to template
   .post(
     isLoggedIn,
-    validateListing,
     upload.single('listing[image]'),
+    validateListing,
     wrapAsync(listingController.saveNewListing), // Create a listing and redirect to the listing catalog
   );
   
@@ -49,6 +49,7 @@ router
   .put(
     isLoggedIn,
     isOwner,
+    upload.single('listing[image]'),
     validateListing,
     wrapAsync(listingController.updateListing), // Update listing with form data and redirect to listing details
   );
